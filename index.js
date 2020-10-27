@@ -84,8 +84,17 @@ let data = {
     ]
 }
 
-const obj = (function () {
+const init = (function () {
 
+    let StringBuilder = function () { this.value = ""; };
+    StringBuilder.prototype.append = function (value) { this.value += value; };
+    StringBuilder.prototype.toString = function () { return this.value; };
+    StringBuilder.prototype.empty = function () {
+        this.value = ""; return this;
+    }
+    let sb = new StringBuilder();
+
+    //cart is used to hold the item order details
     class Cart {
         #selectedItems = {};
         #itemQuantityMap = {};
@@ -113,7 +122,7 @@ const obj = (function () {
             document.querySelector('#totals').innerText = this.total;
             document.querySelector('#items').innerText = this.basicTotal;
             document.querySelector('#discount').innerText = this.discount;
-            document.querySelector('#noOfItems').innerText = "Items (" + Object.keys(this.selectedItems).length + " ): ";
+            document.querySelector('#noOfItems').innerText = "Items (" + Object.keys(this.selectedItems).length + "): ";
         }
 
         getQty = function (id) {
@@ -151,6 +160,7 @@ const obj = (function () {
     }
 
 
+    //Item is used to hold each item details
     class Item {
         constructor(id, name, image, actual, display, discount) {
             this.id = id;
@@ -179,16 +189,10 @@ const obj = (function () {
 
     const cart = new Cart();
 
+    //list of Items
     const itemList = {};
 
-    let StringBuilder = function () { this.value = ""; };
-    StringBuilder.prototype.append = function (value) { this.value += value; };
-    StringBuilder.prototype.toString = function () { return this.value; };
-    StringBuilder.prototype.empty = function () {
-        this.value = ""; return this;
-    }
-    let sb = new StringBuilder();
-
+    //selector click will matches the childSelector if its present then it triggers event handler
     const on = (selector, eventType, childSelector, eventHandler) => {
         const elements = document.querySelectorAll(selector)
         for (element of elements) {
@@ -200,7 +204,7 @@ const obj = (function () {
         }
     }
 
-
+    //plot each item from the data
     plotItems = () => {
         const parent = document.querySelector(".leftPanel");
         data.items.map((ele, i) => {
@@ -214,6 +218,7 @@ const obj = (function () {
             parent.insertAdjacentHTML('beforeend', itemList[id].render());
         });
 
+        //event listener for add to cart button
         document.querySelectorAll('.order-btn').forEach(item => {
             item.addEventListener('click', event => {
                 const id = event.target.getAttribute("id");
@@ -224,6 +229,7 @@ const obj = (function () {
             })
         });
 
+        // event listener for + button
         on(".added-item", "click", ".add", event => {
             const parent = event.target.closest('.added-item-container');
             const id = parent.getAttribute('id');
@@ -234,6 +240,7 @@ const obj = (function () {
             dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].displayPrize;
         });
 
+        // event listener for - button
         on(".added-item", "click", ".sub", event => {
             const parent = event.target.closest('.added-item-container');
             const id = parent.getAttribute('id');
@@ -254,25 +261,29 @@ const obj = (function () {
         });
     }
 
+    //plot the cart detail
     plotOrder = (item) => {
         const parent = document.querySelector(".added-item");
         sb.empty();
         sb.append("<div class='added-item-container' id='" + item.id + "'>");
-        sb.append("     <img class='added-img' src='./Images/" + item.image + "' />");
-        sb.append("     <div class='title'>" + item.brandName + "</div>");
-        sb.append("     <span class='add btn'>+</span>")
+        sb.append("     <div class='icon-container'>")
+        sb.append("         <img class='added-img' src='./Images/" + item.image + "' />");
+        sb.append("         <div class='title'>" + item.brandName + "</div>");
+        sb.append("     </div>");
+        sb.append("     <div class='btn-container'>");
+        sb.append("     <span class='add btn'>+</span>");
         sb.append("         <div class='qty'>1</div>");
-        sb.append("     <span class='sub btn'>-</span>")
+        sb.append("     <span class='sub btn'>-</span>");
+        sb.append("     </div>");
         sb.append("     <div class='displayPrize'>" + item.displayPrize + "</div>");
         sb.append("</div>");
         parent.insertAdjacentHTML('beforeend', sb.toString());
     }
 
 
-
+    //public function
     _init = function () {
         plotItems();
-
     }
 
     return _init;
