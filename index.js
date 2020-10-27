@@ -86,7 +86,7 @@ let data = {
 
 const obj = (function () {
 
-    const addedItem = [];
+    const addedItem = {};
     const itemList = {};
     let StringBuilder = function () { this.value = ""; };
     StringBuilder.prototype.append = function (value) { this.value += value; };
@@ -94,7 +94,18 @@ const obj = (function () {
     StringBuilder.prototype.empty = function () {
         this.value = ""; return this;
     }
+    let sb = new StringBuilder();
 
+    const on = (selector, eventType, childSelector, eventHandler) => {
+        const elements = document.querySelectorAll(selector)
+        for (element of elements) {
+            element.addEventListener(eventType, eventOnElement => {
+                if (eventOnElement.target.matches(childSelector)) {
+                    eventHandler(eventOnElement)
+                }
+            })
+        }
+    }
 
     class Item {
         constructor(id, name, image, actual, display, discount) {
@@ -109,7 +120,7 @@ const obj = (function () {
 
 
         render = function () {
-            let sb = new StringBuilder();
+            sb.empty();
             sb.append("<div class='itemStyle'>");
             sb.append("     <img class='img' src='./Images/" + this.image + "' />");
             sb.append("     <div class='title'>" + this.brandName + "</div>");
@@ -132,8 +143,7 @@ const obj = (function () {
                 price,
                 discount } = ele;
             const { actual, display } = price;
-
-            itemList[id] = new Item(id, name, image, actual, display, discount)
+            itemList[id] = new Item(id, name, image, actual, display, discount);
             parent.insertAdjacentHTML('beforeend', itemList[id].render());
         });
 
@@ -141,13 +151,53 @@ const obj = (function () {
             item.addEventListener('click', event => {
                 const id = event.target.getAttribute("id");
                 event.target.textContent = "Added";
-                addedItem.push(itemList[id])
+                event.target.classList.add('disabled');
+                addedItem[id] = { item: null, qty: 1 };
+                addedItem[id]['item'] = itemList[id];
+                plotOrder(itemList[id]);
             })
-          })
+        });
+
+        on(".added-item", "click", ".add", event => {
+            const parent = event.target.closest('.added-item-container');
+            const id = parent.getAttribute('id');
+            addedItem[id].qty += 1;
+            const qty = document.querySelector('.qty');
+            qty.innerText = addedItem[id].qty;
+            const dp = document.querySelector('.displayPrize');
+            dp.innerText = addedItem[id].qty * addedItem[id]['item'].displayPrize;
+        });
+
+        on(".added-item", "click", ".sub", event => {
+            const parent = event.target.closest('.added-item-container');
+            const id = parent.getAttribute('id');
+            if (addedItem[id].qty - 1 == 0) {
+                event.target.closest('.added-item-container').remove();
+                delete addedItem[id];
+                const item = document.querySelector('.order-btn[id="' + id + '"]');
+                item.classList.remove('disabled');
+                item.innerText = 'Add to Cart';
+            }
+            addedItem[id].qty -= 1;
+            const qty = document.querySelector('.qty');
+            qty.innerText = addedItem[id].qty;
+            const dp = document.querySelector('.displayPrize');
+            dp.innerText = addedItem[id].qty * addedItem[id]['item'].displayPrize;
+        });
     }
 
-    plotOrder = () => {
-
+    plotOrder = (item) => {
+        const parent = document.querySelector(".added-item");
+        sb.empty();
+        sb.append("<div class='added-item-container' id='" + item.id + "'>");
+        sb.append("     <img class='added-img' src='./Images/" + item.image + "' />");
+        sb.append("     <div class='title'>" + item.brandName + "</div>");
+        sb.append("     <span class='add'>+</span>")
+        sb.append("         <div class='qty'>1</div>");
+        sb.append("     <span class='sub'>-</span>")
+        sb.append("     <div class='displayPrize'>" + item.displayPrize + "</div>");
+        sb.append("</div>");
+        parent.insertAdjacentHTML('beforeend', sb.toString());
     }
 
 
