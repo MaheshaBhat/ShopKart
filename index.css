@@ -1,0 +1,49 @@
+html,
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: aqua;
+}
+.heading{
+    margin-left: 5%;
+}
+.container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.leftPanel {
+  width: 70%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.itemStyle {
+  width: 270px;
+  height: 300px;
+}
+
+.prize-container {
+  display: flex;
+  justify-content: space-around;
+}
+.order-btn {
+  height: 20px;
+  width: 100px;
+  border: 1px solid;
+}
+.rightPanel {
+  width: 30%;
+  height: 100%;
+}
+.img {
+  max-width: 100%;
+  display: block;
+  height: auto;
+}
