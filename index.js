@@ -137,11 +137,13 @@ const obj = (function () {
             parent.insertAdjacentHTML('beforeend', itemList[id].render());
         });
 
-        const element = document.querySelector(".order-btn");
-        element.addEventListener("click", function (e) {
-            console.log(this.getAttribute("id"));
-
-        });
+        document.querySelectorAll('.order-btn').forEach(item => {
+            item.addEventListener('click', event => {
+                const id = event.target.getAttribute("id");
+                event.target.textContent = "Added";
+                addedItem.push(itemList[id])
+            })
+          })
     }
 
     plotOrder = () => {
