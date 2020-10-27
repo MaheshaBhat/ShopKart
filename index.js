@@ -120,13 +120,14 @@ const obj = (function () {
             return this.#itemQuantityMap[id];
         }
         addItem = function (id) {
-            this.incrementQuantity(id);
             this.selectedItems[id] = { 'item': itemList[id] };
+            this.incrementQuantity(id);
         }
 
         removeItem = function (id) {
-            this.decrementQuantity(id);
             delete this.selectedItems[id];
+            this.decrementQuantity(id);
+
         }
 
         incrementQuantity = function (id) {
@@ -259,9 +260,9 @@ const obj = (function () {
         sb.append("<div class='added-item-container' id='" + item.id + "'>");
         sb.append("     <img class='added-img' src='./Images/" + item.image + "' />");
         sb.append("     <div class='title'>" + item.brandName + "</div>");
-        sb.append("     <span class='add'>+</span>")
+        sb.append("     <span class='add btn'>+</span>")
         sb.append("         <div class='qty'>1</div>");
-        sb.append("     <span class='sub'>-</span>")
+        sb.append("     <span class='sub btn'>-</span>")
         sb.append("     <div class='displayPrize'>" + item.displayPrize + "</div>");
         sb.append("</div>");
         parent.insertAdjacentHTML('beforeend', sb.toString());
