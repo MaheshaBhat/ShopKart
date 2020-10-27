@@ -86,8 +86,100 @@ let data = {
 
 const obj = (function () {
 
-    const addedItem = {};
+    class Cart {
+        #selectedItems = {};
+        #itemQuantityMap = {};
+
+        constructor() {
+            this.total = 0;
+            this.discount = 0;
+            this.itemQuantityMap = {};
+            this.basicTotal = 0;
+            this.selectedItems = {};
+
+            // this.selectedItems = new Proxy(this.#selectedItems, {
+            //     set: (selectedItems, prop, value) => {
+            //         //this.total += value.item.displayPrize * this.#itemQuantityMap[prop];
+            //         //this.discount += value.item.discount * this.#itemQuantityMap[prop];
+            //         selectedItems[prop] = value;
+            //         //this.updateTotals();
+            //         return true;
+            //     }
+            // });
+
+        }
+
+        updateTotals() {
+            document.querySelector('#totals').innerText = this.total;
+            document.querySelector('#items').innerText = this.basicTotal;
+            document.querySelector('#discount').innerText = this.discount;
+            document.querySelector('#noOfItems').innerText = "Items (" + Object.keys(this.selectedItems).length + " ): ";
+        }
+
+        getQty = function (id) {
+            return this.#itemQuantityMap[id];
+        }
+        addItem = function (id) {
+            this.incrementQuantity(id);
+            this.selectedItems[id] = { 'item': itemList[id] };
+        }
+
+        removeItem = function (id) {
+            this.decrementQuantity(id);
+            delete this.selectedItems[id];
+        }
+
+        incrementQuantity = function (id) {
+            this.#itemQuantityMap[id] = (this.#itemQuantityMap[id] || 0) + 1;
+            const item = itemList[id];
+            this.total += item.displayPrize;
+            this.basicTotal += item.actualPrize;
+            this.discount += item.discount;
+            this.updateTotals();
+        }
+
+        decrementQuantity = function (id) {
+            this.#itemQuantityMap[id] -= 1;
+            const item = itemList[id];
+            this.total -= item.displayPrize;
+            this.basicTotal -= item.actualPrize;
+            this.discount -= item.discount;
+            this.updateTotals();
+        }
+
+    }
+
+
+    class Item {
+        constructor(id, name, image, actual, display, discount) {
+            this.id = id;
+            this.actualPrize = actual;
+            this.displayPrize = display;
+            this.brandName = name;
+            this.image = image;
+            this.discount = discount;
+        }
+
+
+        render = function () {
+            sb.empty();
+            sb.append("<div class='itemStyle'>");
+            sb.append("     <img class='img' src='./Images/" + this.image + "' />");
+            sb.append("     <div class='title'>" + this.brandName + "</div>");
+            sb.append("     <div class='prize-container'>");
+            sb.append("         <div>" + this.actualPrize + "</div>");
+            sb.append("         <div>" + this.displayPrize + "</div>");
+            sb.append("         <div class='order-btn' id='" + this.id + "'>Add to Cart</div>");
+            sb.append("     </div>")
+            sb.append("</div>")
+            return sb.toString();
+        }
+    }
+
+    const cart = new Cart();
+
     const itemList = {};
+
     let StringBuilder = function () { this.value = ""; };
     StringBuilder.prototype.append = function (value) { this.value += value; };
     StringBuilder.prototype.toString = function () { return this.value; };
@@ -107,32 +199,6 @@ const obj = (function () {
         }
     }
 
-    class Item {
-        constructor(id, name, image, actual, display, discount) {
-            this.id = id;
-            this.actualPrize = actual;
-            this.displayPrize = display;
-            this.brandName = name;
-            this.image = image;
-            this.discount = discount;
-
-        }
-
-
-        render = function () {
-            sb.empty();
-            sb.append("<div class='itemStyle'>");
-            sb.append("     <img class='img' src='./Images/" + this.image + "' />");
-            sb.append("     <div class='title'>" + this.brandName + "</div>");
-            sb.append("     <div class='prize-container'>");
-            sb.append("         <div>" + this.actualPrize + "</div>");
-            sb.append("         <div>" + this.displayPrize + "</div>");
-            sb.append("         <div class='order-btn' id='" + this.id + "'>Add to Cart</div>");
-            sb.append("     </div>")
-            sb.append("</div>")
-            return sb.toString();
-        }
-    }
 
     plotItems = () => {
         const parent = document.querySelector(".leftPanel");
@@ -152,8 +218,7 @@ const obj = (function () {
                 const id = event.target.getAttribute("id");
                 event.target.textContent = "Added";
                 event.target.classList.add('disabled');
-                addedItem[id] = { item: null, qty: 1 };
-                addedItem[id]['item'] = itemList[id];
+                cart.addItem(id)
                 plotOrder(itemList[id]);
             })
         });
@@ -161,28 +226,30 @@ const obj = (function () {
         on(".added-item", "click", ".add", event => {
             const parent = event.target.closest('.added-item-container');
             const id = parent.getAttribute('id');
-            addedItem[id].qty += 1;
-            const qty = document.querySelector('.qty');
-            qty.innerText = addedItem[id].qty;
-            const dp = document.querySelector('.displayPrize');
-            dp.innerText = addedItem[id].qty * addedItem[id]['item'].displayPrize;
+            cart.incrementQuantity(id);
+            const qty = parent.querySelector('.qty');
+            qty.innerText = cart.getQty(id);
+            const dp = parent.querySelector('.displayPrize');
+            dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].displayPrize;
         });
 
         on(".added-item", "click", ".sub", event => {
             const parent = event.target.closest('.added-item-container');
             const id = parent.getAttribute('id');
-            if (addedItem[id].qty - 1 == 0) {
+            if (cart.getQty(id) - 1 == 0) {
                 event.target.closest('.added-item-container').remove();
-                delete addedItem[id];
+                //delete cart.selectedItems[id];
+                cart.removeItem(id);
                 const item = document.querySelector('.order-btn[id="' + id + '"]');
                 item.classList.remove('disabled');
                 item.innerText = 'Add to Cart';
+                return;
             }
-            addedItem[id].qty -= 1;
-            const qty = document.querySelector('.qty');
-            qty.innerText = addedItem[id].qty;
-            const dp = document.querySelector('.displayPrize');
-            dp.innerText = addedItem[id].qty * addedItem[id]['item'].displayPrize;
+            cart.decrementQuantity(id);
+            const qty = parent.querySelector('.qty');
+            qty.innerText = cart.getQty(id);
+            const dp = parent.querySelector('.displayPrize');
+            dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].displayPrize;
         });
     }
 
@@ -204,7 +271,7 @@ const obj = (function () {
 
     _init = function () {
         plotItems();
-        plotOrder();
+
     }
 
     return _init;
