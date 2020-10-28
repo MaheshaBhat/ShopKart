@@ -86,124 +86,10 @@ let data = {
 
 const init = (function () {
 
-    let StringBuilder = function () { this.value = ""; };
-    StringBuilder.prototype.append = function (value) { this.value += value; };
-    StringBuilder.prototype.toString = function () { return this.value; };
-    StringBuilder.prototype.empty = function () {
-        this.value = ""; return this;
-    }
-    let sb = new StringBuilder();
-
-    //cart is used to hold the item order details
-    class Cart {
-        #selectedItems = {};
-        #itemQuantityMap = {};
-
-        constructor() {
-            this.total = 0;
-            this.discount = 0;
-            this.itemQuantityMap = {};
-            this.basicTotal = 0;
-            this.selectedItems = {};
-
-            // this.selectedItems = new Proxy(this.#selectedItems, {
-            //     set: (selectedItems, prop, value) => {
-            //         //this.total += value.item.displayPrize * this.#itemQuantityMap[prop];
-            //         //this.discount += value.item.discount * this.#itemQuantityMap[prop];
-            //         selectedItems[prop] = value;
-            //         //this.updateTotals();
-            //         return true;
-            //     }
-            // });
-
-        }
-
-        updateTotals() {
-            document.querySelector('#totals').innerText = this.total;
-            document.querySelector('#items').innerText = this.basicTotal;
-            document.querySelector('#discount').innerText = this.discount;
-            document.querySelector('#noOfItems').innerText = "Items (" + Object.keys(this.selectedItems).length + "): ";
-        }
-
-        getQty = function (id) {
-            return this.#itemQuantityMap[id];
-        }
-        addItem = function (id) {
-            this.selectedItems[id] = { 'item': itemList[id] };
-            this.incrementQuantity(id);
-        }
-
-        removeItem = function (id) {
-            delete this.selectedItems[id];
-            this.decrementQuantity(id);
-
-        }
-
-        incrementQuantity = function (id) {
-            this.#itemQuantityMap[id] = (this.#itemQuantityMap[id] || 0) + 1;
-            const item = itemList[id];
-            this.total += item.displayPrize;
-            this.basicTotal += item.actualPrize;
-            this.discount += item.discount;
-            this.updateTotals();
-        }
-
-        decrementQuantity = function (id) {
-            this.#itemQuantityMap[id] -= 1;
-            const item = itemList[id];
-            this.total -= item.displayPrize;
-            this.basicTotal -= item.actualPrize;
-            this.discount -= item.discount;
-            this.updateTotals();
-        }
-
-    }
-
-
-    //Item is used to hold each item details
-    class Item {
-        constructor(id, name, image, actual, display, discount) {
-            this.id = id;
-            this.actualPrize = actual;
-            this.displayPrize = display;
-            this.brandName = name;
-            this.image = image;
-            this.discount = discount;
-        }
-
-
-        render = function () {
-            sb.empty();
-            sb.append("<div class='itemStyle'>");
-            sb.append("     <img class='img' src='./Images/" + this.image + "' />");
-            sb.append("     <div class='title'>" + this.brandName + "</div>");
-            sb.append("     <div class='prize-container'>");
-            sb.append("         <div>" + this.actualPrize + "</div>");
-            sb.append("         <div>" + this.displayPrize + "</div>");
-            sb.append("         <div class='order-btn' id='" + this.id + "'>Add to Cart</div>");
-            sb.append("     </div>")
-            sb.append("</div>")
-            return sb.toString();
-        }
-    }
-
-    const cart = new Cart();
-
+    let data = { "items": [] };
     //list of Items
     const itemList = {};
-
-    //selector click will matches the childSelector if its present then it triggers event handler
-    const on = (selector, eventType, childSelector, eventHandler) => {
-        const elements = document.querySelectorAll(selector)
-        for (element of elements) {
-            element.addEventListener(eventType, eventOnElement => {
-                if (eventOnElement.target.matches(childSelector)) {
-                    eventHandler(eventOnElement)
-                }
-            })
-        }
-    }
-
+    const cart = {};
     //plot each item from the data
     plotItems = () => {
         const parent = document.querySelector(".leftPanel");
@@ -217,6 +103,8 @@ const init = (function () {
             itemList[id] = new Item(id, name, image, actual, display, discount);
             parent.insertAdjacentHTML('beforeend', itemList[id].render());
         });
+
+        const cart = new Cart(itemList);
 
         //event listener for add to cart button
         document.querySelectorAll('.order-btn').forEach(item => {
@@ -280,9 +168,14 @@ const init = (function () {
         parent.insertAdjacentHTML('beforeend', sb.toString());
     }
 
+    getData = async function () {
+        const rawData = await fetch('http://localhost:3000/api/home');
+        data = await rawData.json();
+    }
 
     //public function
-    _init = function () {
+    _init = async function () {
+        await getData();
         plotItems();
     }
 
