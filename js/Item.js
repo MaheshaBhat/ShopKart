@@ -16,7 +16,7 @@
         sb.append("     <img class='img' src='./Images/" + this.image + "' />");
         sb.append("     <div class='title'>" + this.brandName + "</div>");
         sb.append("     <div class='prize-container'>");
-        sb.append("         <div>" + this.displayPrize + "</div>");
+        sb.append("         <div><strike>" + this.displayPrize + "</strike></div>");
         sb.append("         <div>" + this.actualPrize + "</div>");
         sb.append("         <div class='order-btn' id='" + this.id + "'>Add to Cart</div>");
         sb.append("     </div>")
