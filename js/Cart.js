@@ -47,8 +47,8 @@ class Cart {
     incrementQuantity = function (id) {
         this.#itemQuantityMap[id] = (this.#itemQuantityMap[id] || 0) + 1;
         const item = this.itemList[id];
-        this.total += item.displayPrize;
-        this.basicTotal += item.actualPrize;
+        this.total += item.actualPrize;
+        this.basicTotal += item.displayPrize;
         this.discount += item.discount;
         this.updateTotals();
     }
@@ -56,8 +56,8 @@ class Cart {
     decrementQuantity = function (id) {
         this.#itemQuantityMap[id] -= 1;
         const item = this.itemList[id];
-        this.total -= item.displayPrize;
-        this.basicTotal -= item.actualPrize;
+        this.total -= item.actualPrize;
+        this.basicTotal -= item.displayPrize;
         this.discount -= item.discount;
         this.updateTotals();
     }

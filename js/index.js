@@ -124,8 +124,8 @@ const init = (function () {
             cart.incrementQuantity(id);
             const qty = parent.querySelector('.qty');
             qty.innerText = cart.getQty(id);
-            const dp = parent.querySelector('.displayPrize');
-            dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].displayPrize;
+            const dp = parent.querySelector('.actualPrize');
+            dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].actualPrize;
         });
 
         // event listener for - button
@@ -144,8 +144,8 @@ const init = (function () {
             cart.decrementQuantity(id);
             const qty = parent.querySelector('.qty');
             qty.innerText = cart.getQty(id);
-            const dp = parent.querySelector('.displayPrize');
-            dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].displayPrize;
+            const dp = parent.querySelector('.actualPrize');
+            dp.innerText = cart.getQty(id) * cart.selectedItems[id]['item'].actualPrize;
         });
     }
 
@@ -163,7 +163,7 @@ const init = (function () {
         sb.append("         <div class='qty'>1</div>");
         sb.append("     <span class='sub btn'>-</span>");
         sb.append("     </div>");
-        sb.append("     <div class='displayPrize'>" + item.displayPrize + "</div>");
+        sb.append("     <div class='actualPrize'>" + item.actualPrize + "</div>");
         sb.append("</div>");
         parent.insertAdjacentHTML('beforeend', sb.toString());
     }
